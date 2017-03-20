@@ -1,20 +1,17 @@
 package bloom
 
-import (
-	"errors"
-	"math"
-)
+import "errors"
 
 // NumberMapper holds the details of how to map numbers
 type NumberMapper struct {
-	inRangeStart  float64
-	inRangeEnd    float64
-	outRangeStart float64
-	outRangeEnd   float64
+	inRangeStart  int32
+	inRangeEnd    int32
+	outRangeStart int32
+	outRangeEnd   int32
 }
 
 // NewNumberMapper creates a new NumberMapper
-func NewNumberMapper(inRngStrt, inRngEnd, outRngStrt, outRngEnd float64) NumberMapper {
+func NewNumberMapper(inRngStrt, inRngEnd, outRngStrt, outRngEnd int32) NumberMapper {
 	return NumberMapper{
 		inRangeStart:  inRngStrt,
 		inRangeEnd:    inRngEnd,
@@ -24,7 +21,7 @@ func NewNumberMapper(inRngStrt, inRngEnd, outRngStrt, outRngEnd float64) NumberM
 }
 
 // Map maps a number into the configured range
-func (nm *NumberMapper) Map(num float64) (float64, error) {
+func (nm *NumberMapper) Map(num int32) (int32, error) {
 	if num < nm.inRangeStart || num > nm.inRangeEnd {
 		return -1, errors.New("number out of range")
 	}
@@ -32,11 +29,15 @@ func (nm *NumberMapper) Map(num float64) (float64, error) {
 	return nm.mapNum(num), nil
 }
 
-func (nm *NumberMapper) mapNum(x float64) float64 {
-	y := (x-nm.inRangeStart)*(nm.outRangeEnd-nm.outRangeStart)/(nm.inRangeEnd-nm.inRangeStart) + nm.outRangeStart
-	return round(y)
-}
+func (nm *NumberMapper) mapNum(x int32) int32 {
+	xAdj := float32(x)
+	inRangeStart := float32(nm.inRangeStart)
+	inRangeEnd := float32(nm.inRangeEnd)
+	outRangeStart := float32(nm.outRangeStart)
+	outRangeEnd := float32(nm.outRangeEnd)
 
-func round(num float64) float64 {
-	return float64(int(num + math.Copysign(0.5, num)))
+	res := (xAdj-inRangeStart)*(outRangeEnd-outRangeStart)/(inRangeEnd-inRangeStart) + outRangeStart
+	// return (x-nm.inRangeStart)*(nm.outRangeEnd-nm.outRangeStart)/(nm.inRangeEnd-nm.inRangeStart) + nm.outRangeStart
+
+	return int32(res)
 }
